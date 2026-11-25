@@ -65,7 +65,7 @@ async function quotePDF(file,supplier){
    const ml=quoteMl(title[2]);
    const type=activeType;
    if(out.some(x=>x.sku===sku[1]))continue;
-   out.push({selected:true,name,ml,type,supplier:supplier||(\/樂酌|raku/i.test(file.name)?'樂酌':''),sku:sku[1],cost:quoteNum(amount[1]),price:0,cup:0,desc:'',source:'PDF 第'+p+'頁｜通路價（請核對）'});
+   out.push({selected:true,name,ml,type,supplier:supplier||(/樂酌|raku/i.test(file.name)?'樂酌':''),sku:sku[1],cost:quoteNum(amount[1]),price:0,cup:0,desc:'',source:'PDF 第'+p+'頁｜通路價（請核對）'});
   }
  }
  if(!allTextItems)throw Error('此 PDF 為掃描圖，沒有可讀文字，請改上傳 Excel / CSV 或使用雲端 AI OCR。');
