@@ -3,7 +3,7 @@
  * 原本的功能程式不需修改：本模組在資料寫入手機後自動上傳，進入店別時自動下載。
  */
 (function () {
-  const CLOUD_URL = ''; // ← Apps Script「網頁應用程式網址」（結尾 /exec）
+  const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwvcq-_dXucjans6i0FyDOvRaKd1kyEkDIHHdlql4lg0uEFQio3LqsJNlduKM8sJ3eM/exec'; // Apps Script 網頁應用程式網址
 
   const LS = window.localStorage;
   const rawSet = Storage.prototype.setItem;
