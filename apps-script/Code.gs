@@ -1,10 +1,10 @@
 /**
- * 鳥久 × 隼｜店內管理系統 — Google 試算表雲端同步（v3：兩店共用品項與酒款）
+ * 鳥久 × 隼｜店內管理系統 — Google 試算表雲端同步（v3.1：兩店共用品項與酒款）
  *
  * 第一次使用／更新程式：
  *   1. 把下面 SYNC_KEY 改成你的同步密碼（與舊版相同即可，手機不用重新輸入）
  *   2. 函式選單選「setup」→ 執行（會自動把舊版分店格式轉成共用格式，資料不會遺失）
- *   3.（選用）品項是空的才需要：執行「seedItems」匯入成本主表 349 個品項
+ *   3. setup 會自動完成：品項是空的就匯入成本主表 349 個品項；現有酒款一次標成兩店都有（只做一次）
  *   4. 部署 → 管理部署作業 → 編輯 → 版本選「新版本」→ 部署（網址不變）
  */
 const SYNC_KEY = '請改成你的同步密碼';
@@ -32,6 +32,7 @@ function setup() {
   const log = ensureSheet_('log');
   log.getRange('D:D').setNumberFormat('yyyy-mm-dd hh:mm'); log.setColumnWidth(8, 260); log.hideColumns(13);
   buildStats_(); buildHelp_(true);
+  oneTime_();
   ['工作表1', 'Sheet1'].forEach(n => { const s = ss.getSheetByName(n); if (s && s.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(s); });
   ss.setActiveSheet(it);
 }
@@ -135,6 +136,7 @@ function handle_(p) {
       case 'saveMaster': return json_(withLock_(() => saveMaster_(p.store, p.vendors, p.items)));
       case 'wines': return json_(getWines_(p.store));
       case 'saveWines': return json_(withLock_(() => saveWines_(p.store, p.rows)));
+      case 'addWines': return json_(withLock_(() => addWines_(p.rows, p.stores)));
       case 'history': return json_(getHistory_(p.store, p.kind, p.from, p.to));
       case 'saveOrder': return json_(withLock_(() => saveOrder_(p.store, p.kind, p.order)));
       case 'deleteOrder': return json_(withLock_(() => deleteOrder_(p.store, p.id)));
@@ -251,6 +253,42 @@ function saveWines_(store, list) {
   rows.forEach(r => { if (!keep.has(String(r[0])) && used_(r[c])) r[c] = ''; });
   writeAll_('wines', rows);
   return { ok: true, count: keep.size };
+}
+
+/* 報價單匯入：新增或更新酒款，並標記指定門市（不會取消其他酒款的標記） */
+function addWines_(list, stores) {
+  if (!Array.isArray(list)) return { ok: false, error: '資料不完整' };
+  stores = (Array.isArray(stores) ? stores : STORES).filter(s => WINE_STORE_COL[s] !== undefined);
+  const rows = values_('wines').filter(r => String(r[1]).trim());
+  const n = s => String(s || '').toLowerCase().replace(/[\s　_\-－（）()]/g, '');
+  const byId = {}, byKey = {};
+  rows.forEach(r => { byId[String(r[0])] = r; byKey[n(r[1]) + '|' + (Number(r[3]) || '')] = r; if (r[8]) byKey['sku:' + n(r[8])] = r; });
+  let added = 0, updated = 0;
+  list.forEach(w => {
+    if (!str_(w.name).trim()) return;
+    let row = byId[str_(w.id)] || (w.sku && byKey['sku:' + n(w.sku)]) || byKey[n(w.name) + '|' + (Number(w.ml) || '')];
+    if (!row) { row = [str_(w.id) || Utilities.getUuid(), '', '', '', '', '', '', '', '', '', '', '']; rows.push(row); byId[row[0]] = row; added++; } else updated++;
+    row[1] = str_(w.name); row[2] = str_(w.type) || row[2]; row[3] = num_(w.ml) === '' ? row[3] : num_(w.ml);
+    if (num_(w.price) !== '' && Number(w.price) > 0) row[4] = num_(w.price);
+    if (num_(w.cup) !== '' && Number(w.cup) > 0) row[5] = num_(w.cup);
+    if (num_(w.cost) !== '') row[6] = num_(w.cost);
+    ['', '', '', '', '', '', '', str_(w.supplier).trim(), str_(w.sku), str_(w.desc)].forEach((v, i) => { if (i >= 7 && v) row[i] = v; });
+    stores.forEach(s => row[WINE_STORE_COL[s]] = 'v');
+  });
+  writeAll_('wines', rows);
+  return { ok: true, added, updated };
+}
+
+/* 一次性整理：品項空白時匯入成本主表；既有酒款標成兩店都有 */
+function oneTime_() {
+  const props = PropertiesService.getScriptProperties();
+  if (!values_('items').some(r => String(r[3]).trim())) seedItems();
+  if (props.getProperty('winesBothStores') !== 'done') {
+    const rows = values_('wines').filter(r => String(r[1]).trim());
+    rows.forEach(r => { if (used_(r[WINE_STORE_COL['隼']]) || used_(r[WINE_STORE_COL['鳥久']])) { r[WINE_STORE_COL['隼']] = 'v'; r[WINE_STORE_COL['鳥久']] = 'v'; } });
+    if (rows.length) writeAll_('wines', rows);
+    props.setProperty('winesBothStores', 'done');
+  }
 }
 
 /* ---------- 叫貨紀錄 ---------- */
