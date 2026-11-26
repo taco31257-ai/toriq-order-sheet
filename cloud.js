@@ -209,6 +209,7 @@
     } catch (e) { lastErr = e.message; }
     setBadge();
     refreshView(s);
+    await flushAddWines();
     await pushOrders('food', s); await pushOrders('wine', s); await pushWines(s);
   }
 
@@ -373,6 +374,21 @@
       pullMonth('wine', current, mo).then(ok => { if (ok && document.getElementById('whl')) _dw(); });
       return r;
     };
+  }
+  // 報價單匯入：新增／更新酒款並標記兩店；失敗時保留，下次同步重送
+  window.cloudAddWines = function (list) {
+    const box = (get('cloud:pendingAddWines') || []).concat(list || []);
+    put('cloud:pendingAddWines', box);
+    return flushAddWines();
+  };
+  function flushAddWines() {
+    return serial('addWines', async () => {
+      const box = get('cloud:pendingAddWines') || [];
+      if (!box.length || !CLOUD_URL || !key()) return;
+      try { await api({ action: 'addWines', store: STORES[0], stores: STORES, rows: box }, true); put('cloud:pendingAddWines', []); lastErr = ''; }
+      catch (e) { lastErr = e.message; }
+      setBadge();
+    });
   }
   window.addEventListener('online', () => { if (typeof current !== 'undefined' && current) { pushOrders('food', current); pushOrders('wine', current); pushWines(current); } });
   setBadge();
