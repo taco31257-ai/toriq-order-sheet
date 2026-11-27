@@ -630,8 +630,10 @@ function foodImportPanel(){
     const old=JSON.parse(backups[shop]||'null')||{vendors:[],items:[],history:[]};
     const next={...old,vendors:Array.isArray(old.vendors)?old.vendors.slice():[],items:Array.isArray(old.items)?old.items.slice():[],history:Array.isArray(old.history)?old.history:[]};
     const byVendor=new Map(next.vendors.map(v=>[foodNorm(v.name),v]));
+    const shopVendorNames=new Set(data.stores[shop].map(it=>foodNorm(it.vendor)));
     for(const source of data.vendors){
      const key=foodNorm(source.name);
+     if(!shopVendorNames.has(key))continue;
      let v=byVendor.get(key);
      if(!v){v={id:'imp-v:'+key,name:source.name,days:source.days||'',note:source.note||''};next.vendors.push(v);byVendor.set(key,v)}
      else if(!v.days&&source.days)v.days=source.days;
