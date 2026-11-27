@@ -104,6 +104,18 @@
     const o = readFood(s), h = masterHash(o), last = getRaw('cloud:master:' + s);
     if (h === last || (!last && !first)) return;
     const r = await api({ action: 'saveMaster', store: s, vendors: o.vendors || [], items: o.items || [] }, true);
+    // 避免舊版 GAS 將「6包／半斤」誤轉成空值，或漏存兩店商品備註
+    const localById = new Map((o.items || []).map(it => [String(it.id), it]));
+    const returned = new Map((r.items || []).map(it => [String(it.id), it]));
+    const invalid = [...localById.entries()].filter(([id, it]) => {
+      const remote = returned.get(id);
+      if (!remote) return true;
+      for (const field of ['week', 'holiday', 'note']) {
+        if (String(it[field] ?? '').trim() !== String(remote[field] ?? '').trim()) return true;
+      }
+      return false;
+    });
+    if (invalid.length) throw new Error('雲端試算表程式未保留 '+invalid.length+' 筆安全庫存／備註，請更新 Apps Script v3.2 並重新部署。已保留本機資料');
     if (r.others) { put('cloud:others:' + s, r.others); put('cloud:vendors', r.vendors); }
     putRaw('cloud:master:' + s, h);
   }
@@ -146,6 +158,17 @@
     if (last && masterHash(o) !== last) { await pushMasterNow(s); return; } // 這支手機有尚未上傳的修改
     const vname = id => (m.vendors.find(v => v.id === id) || {}).name || '';
     const items = m.items.slice(), others = m.others.slice(), vendorIds = new Set();
+    // 雲端舊版可能捨棄文字型安全庫存。先保留本機仍有效的平假日及備註。
+    const localVendor = id => ((o.vendors || []).find(v => v.id === id) || {}).name || '';
+    const byName = new Map((o.items || []).map(it => [norm(localVendor(it.vendor))+'|'+norm(it.name), it]));
+    let protectedFields=0;
+    items.forEach(it=>{
+      const old=(o.items||[]).find(d=>String(d.id)===String(it.id))||byName.get(norm(vname(it.vendor))+'|'+norm(it.name));
+      if(!old)return;
+      for(const field of ['week','holiday','note']){
+        if(!String(it[field]??'').trim()&&String(old[field]??'').trim()){it[field]=old[field];protectedFields++}
+      }
+    });
     let added = false;
     if (!last && (o.items || []).length) {
       // 這支手機第一次同步：保留手機上雲端沒有的品項
@@ -165,7 +188,7 @@
     o.vendors = m.vendors.filter(v => vendorIds.has(v.id) || !catalogVendors.has(v.id));
     o.items = items;
     put(KEYS.food + s, o); put('cloud:others:' + s, others); syncMemory(s);
-    if (added) await pushMasterNow(s, true); else putRaw('cloud:master:' + s, masterHash(o));
+    if (added || protectedFields) await pushMasterNow(s, true); else putRaw('cloud:master:' + s, masterHash(o));
   }
 
   /* ---------- 下載：共用酒款 ---------- */
