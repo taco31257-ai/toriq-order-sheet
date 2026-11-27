@@ -339,10 +339,101 @@ let wAmounts={}, wVendor='', wWho='', wDate='', wNote='', wCat='全部';
 function wineHistory(){try{return JSON.parse(localStorage.getItem('wineOrdersV3:'+current))||[]}catch{return []}}
 function wineHub(){show('landing');$('heading').textContent=current+'居酒屋｜酒類管理';$('landing').innerHTML='<h2>酒類管理</h2><div class="row"><button onclick="startWineOrder()">酒類叫貨</button><button onclick="wineHist()">叫貨紀錄</button></div><div class="row" style="margin-top:12px"><button onclick="openWine()">手動酒標列印</button><button onclick="openWine()">酒款資料管理</button></div><div class="row" style="margin-top:12px"><button style="background:#53643c" onclick="openShared()">共用酒品庫・匯入廠商進價</button></div>'}
 function startWineOrder(){wCat='全部';wAmounts={};wVendor='';wWho='';wDate='';wNote='';wineOrder()}
-function wineOrder(){show('order');$('heading').textContent=current+'居酒屋｜酒類叫貨';let suppliers=[...new Set(rows().map(d=>String(d.supplier||'').trim()).filter(Boolean))].sort();$('order').innerHTML=`<button class="alt" onclick="wineHub()">返回酒類管理</button><label>廠商</label><select id="wv"><option value="">選擇廠商</option>${suppliers.map(v=>`<option ${v===wVendor?'selected':''}>${esc(v)}</option>`).join('')}</select><p class="muted">未填代理商的酒款請先到資料管理補填。</p><label>叫貨人員</label><input id="ww" value="${esc(wWho)}"><label>送貨日期</label><input id="wd" type="date" value="${esc(wDate)}"><div id="orderTabs" class="wine-tabs"></div><label>搜尋酒款</label><input id="ws"><div id="wl"></div><h2 id="wt"></h2><div id="wineReview"><label>備註</label><textarea id="wn">${esc(wNote)}</textarea><button onclick="wineMessage()">預覽叫貨單</button><textarea id="wm" rows="8" readonly></textarea><button onclick="saveWineOrder()">複製並儲存紀錄</button></div><div class="float-order"><div><small id="wFloatCount"></small><b id="wFloatTotal"></b></div><button onclick="jumpWineReview()">預覽叫貨單 ↓</button></div>`;$('wv').onchange=e=>{if(Object.values(wAmounts).some(x=>x>0)&&!confirm('切換廠商將清空本次數量，確定？')){e.target.value=wVendor;return}wVendor=e.target.value;wAmounts={};wineItems()};$('ww').oninput=e=>wWho=e.target.value;$('wd').oninput=e=>wDate=e.target.value;$('wn').oninput=e=>wNote=e.target.value;$('ws').oninput=wineItems;drawWineTabs();wineItems()}function drawWineTabs(){tabs('orderTabs',wCat,c=>{wCat=c;drawWineTabs();wineItems()})}function jumpWineReview(){$('wineReview').scrollIntoView({behavior:'smooth',block:'start'});if(wVendor&&wWho.trim()&&wDate&&wineLines().length)wineMessage()}
-function wineLines(){return rows().flatMap((d,i)=>wVendor&&String(d.supplier||'').trim()===wVendor&&wAmounts[i]>0?[{d:{...d},qty:wAmounts[i]}]:[])}
-function wineTotal(){let l=wineLines();$('wFloatCount').textContent='已選 '+l.length+' 款・'+l.reduce((a,x)=>a+x.qty,0)+' 瓶';$('wFloatTotal').textContent='NT$ '+l.reduce((a,x)=>a+(Number(x.d.cost)||0)*x.qty,0).toLocaleString()+(l.some(x=>!(Number(x.d.cost)>0))?'（部分未填）':'');$('wt').textContent='預估總價 NT$ '+l.reduce((a,x)=>a+(Number(x.d.cost)||0)*x.qty,0).toLocaleString()+(l.some(x=>!(Number(x.d.cost)>0))?'（部分進價未填）':'');$('wm').value=''}
-function wineItems(){$('wl').replaceChildren();rows().forEach((d,i)=>{if(!wVendor||String(d.supplier||'').trim()!==wVendor||(wCat!=='全部'&&wineType(d.type)!==wCat)||!String(d.name).toLowerCase().includes($('ws').value.toLowerCase()))return;let e=document.createElement('div');e.className='item';e.innerHTML=`<b>${esc(d.name)}｜${esc(d.ml)}ml</b><div class="muted">進價 ${esc(d.cost||'未填')} 元／瓶</div><input type="number" min="0" max="999" step="1" placeholder="瓶數" value="${wAmounts[i]||''}">`;e.querySelector('input').oninput=ev=>{let n=Number(ev.target.value);wAmounts[i]=Number.isInteger(n)&&n>0&&n<=999?n:0;wineTotal()};$('wl').append(e)});wineTotal()}
+
+function supplierWineCatalog(){
+ sharedLoad();
+ const shop=current||store(), out=[], seen=new Set();
+ const local=Array.isArray(db[shop])?db[shop]:[];
+ const byKey=new Map();
+ for(const q of sharedDB.quotes){if(!q.productKey||!q.supplier)continue;if(!byKey.has(q.productKey))byKey.set(q.productKey,[]);byKey.get(q.productKey).push(q)}
+ for(const p of sharedDB.products){
+  if(p.stores&&p.stores[shop]===false)continue;
+  const d=local.find(w=>sharedNorm(w.name)===sharedNorm(p.name)&&Number(w.ml)===Number(p.ml));
+  const quotes=byKey.get(p.key)||[];
+  for(const supplier of new Set([...(p.suppliers||[]),...quotes.map(x=>x.supplier)].filter(Boolean))){
+   const q=quotes.filter(x=>x.supplier===supplier).slice(-1)[0];
+   const identity=sharedNorm(p.name)+'|'+p.ml+'|'+sharedNorm(supplier);
+   seen.add(identity);
+   out.push({id:'p:'+p.key+':'+supplier,name:p.name,ml:p.ml,type:p.type,supplier,cost:q&&q.vat||0,price:d&&d.price||0,cup:d&&d.cup||0,desc:d&&d.desc||'',costLabel:q&&q.vat?'含稅進貨價':'尚未設定進價'});
+  }
+ }
+ for(let i=0;i<local.length;i++){
+  const d=local[i],supplier=String(d.supplier||'').trim();if(!supplier)continue;
+  const identity=sharedNorm(d.name)+'|'+Number(d.ml)+'|'+sharedNorm(supplier);
+  if(seen.has(identity))continue;seen.add(identity);
+  out.push(Object.assign({},d,{id:'w:'+i,supplier,costLabel:Number(d.cost)>0?'酒款進價':'尚未設定進價'}));
+ }
+ // 若雲端店別酒單為空，仍能以原始公開酒款目錄測試供應商選擇
+ if(out.length===0)seed.forEach((d,i)=>{if(d.supplier)out.push(Object.assign({},d,{id:'seed:'+i,cost:'',costLabel:'備用酒款目錄・進價未載入'}))});
+ return out;
+}
+let orderWineCatalog=[];
+function wineOrder(){
+ show('order');$('heading').textContent=current+'居酒屋｜酒類叫貨';
+ orderWineCatalog=supplierWineCatalog();
+ const suppliers=[...new Set(orderWineCatalog.map(d=>String(d.supplier||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+ const root=$('order');root.replaceChildren();
+ const back=document.createElement('button');back.className='alt';back.textContent='返回酒類管理';back.onclick=wineHub;root.append(back);
+ const banner=document.createElement('div');banner.className='quote-note';banner.style.marginTop='12px';
+ banner.textContent='共用酒品 '+sharedDB.products.length+' 款｜可選廠商 '+suppliers.length+' 家。'+(!sharedDB.products.length?' 本機尚無共用報價資料；如需各廠商含稅進價，請先匯入共用酒品 CSV。':'');
+ root.append(banner);
+ const imp=document.createElement('button');imp.textContent='前往共用酒品庫／匯入報價';imp.className='alt';imp.onclick=openShared;root.append(imp);
+ function field(title,id,tag,attributes){
+  const lab=document.createElement('label');lab.textContent=title;root.append(lab);
+  const el=document.createElement(tag);el.id=id;if(attributes)Object.assign(el,attributes);root.append(el);return el;
+ }
+ const v=field('廠商','wv','select');
+ const blank=document.createElement('option');blank.value='';blank.textContent='選擇廠商';v.append(blank);
+ for(const supplier of suppliers){const op=document.createElement('option');op.value=supplier;op.textContent=supplier;v.append(op)}
+ v.value=wVendor;
+ if(!suppliers.length){const warn=document.createElement('p');warn.textContent='目前沒有廠商。請先到共用酒品庫匯入 CSV，系統會自動建立。';root.append(warn)}
+ const who=field('叫貨人員','ww','input',{value:wWho});
+ const date=field('送貨日期','wd','input',{type:'date',value:wDate});
+ const tabsEl=document.createElement('div');tabsEl.id='orderTabs';tabsEl.className='wine-tabs';root.append(tabsEl);
+ const search=field('搜尋酒款','ws','input',{placeholder:'輸入酒款名稱或容量'});
+ const list=document.createElement('div');list.id='wl';root.append(list);
+ const total=document.createElement('h2');total.id='wt';root.append(total);
+ const review=document.createElement('div');review.id='wineReview';root.append(review);
+ const nlabel=document.createElement('label');nlabel.textContent='備註';review.append(nlabel);
+ const notes=document.createElement('textarea');notes.id='wn';notes.value=wNote;review.append(notes);
+ const previewBtn=document.createElement('button');previewBtn.textContent='預覽叫貨單';previewBtn.onclick=wineMessage;review.append(previewBtn);
+ const message=document.createElement('textarea');message.id='wm';message.rows=8;message.readOnly=true;review.append(message);
+ const save=document.createElement('button');save.textContent='複製並儲存紀錄';save.onclick=saveWineOrder;review.append(save);
+ const float=document.createElement('div');float.className='float-order';
+ const ftext=document.createElement('div');
+ const cnt=document.createElement('small');cnt.id='wFloatCount';ftext.append(cnt);
+ const money=document.createElement('b');money.id='wFloatTotal';ftext.append(money);float.append(ftext);
+ const jump=document.createElement('button');jump.textContent='預覽叫貨單 ↓';jump.onclick=jumpWineReview;float.append(jump);root.append(float);
+ v.onchange=ev=>{if(Object.values(wAmounts).some(x=>x>0)&&!confirm('切換廠商將清空數量，確定？')){ev.target.value=wVendor;return}wVendor=ev.target.value;wAmounts={};wineItems()};
+ who.oninput=ev=>wWho=ev.target.value;date.oninput=ev=>wDate=ev.target.value;notes.oninput=ev=>wNote=ev.target.value;search.oninput=wineItems;
+ drawWineTabs();wineItems();
+}
+function drawWineTabs(){tabs('orderTabs',wCat,c=>{wCat=c;drawWineTabs();wineItems()})}
+function jumpWineReview(){$('wineReview').scrollIntoView({behavior:'smooth',block:'start'});if(wVendor&&wWho.trim()&&wDate&&wineLines().length)wineMessage()}
+function wineLines(){return orderWineCatalog.filter(d=>wVendor&&d.supplier===wVendor&&Number(wAmounts[d.id])>0).map(d=>({d:Object.assign({},d),qty:Number(wAmounts[d.id])}))}
+function wineTotal(){
+ const l=wineLines(),sum=l.reduce((a,x)=>a+(Number(x.d.cost)||0)*x.qty,0),missing=l.some(x=>!(Number(x.d.cost)>0));
+ $('wFloatCount').textContent='已選 '+l.length+' 款・'+l.reduce((a,x)=>a+x.qty,0)+' 瓶';
+ $('wFloatTotal').textContent='NT$ '+sum.toLocaleString()+(missing?'（部分未填）':'');
+ $('wt').textContent='預估總價 NT$ '+sum.toLocaleString()+(missing?'（部分進價未填）':'');
+ $('wm').value='';
+}
+function wineItems(){
+ const list=$('wl');list.replaceChildren();const search=$('ws').value.trim().toLowerCase();
+ let hits=0;
+ for(const d of orderWineCatalog){
+  if(!wVendor||d.supplier!==wVendor||(wCat!=='全部'&&wineType(d.type)!==wCat)||!(d.name.toLowerCase().includes(search)||String(d.ml).includes(search)))continue;
+  hits++;
+  const item=document.createElement('div');item.className='item';
+  const title=document.createElement('b');title.textContent=d.name+'｜'+d.ml+'ml';
+  const details=document.createElement('div');details.className='muted';details.textContent=(d.costLabel||'進價')+' '+(Number(d.cost)>0?'NT$ '+Number(d.cost).toLocaleString():'未填')+'／瓶';
+  const input=document.createElement('input');input.type='number';input.min='0';input.max='999';input.step='1';input.placeholder='瓶數';input.value=wAmounts[d.id]||'';
+  input.oninput=ev=>{const n=Number(ev.target.value);wAmounts[d.id]=Number.isInteger(n)&&n>0&&n<=999?n:0;wineTotal()};
+  item.append(title,details,input);list.append(item);
+ }
+ if(wVendor&&hits===0){const tip=document.createElement('p');tip.className='muted';tip.textContent='這個廠商在目前分類下沒有酒款，可切換「全部」或前往共用酒品庫確認。';list.append(tip)}
+ wineTotal();
+}
 function wineMessage(){let l=wineLines();if(!wVendor||!wWho.trim()||!wDate||!l.length){alert('請確認廠商、人員、日期及瓶數');return}let msg=`【${current}居酒屋｜${wVendor}酒類叫貨】\n送貨日期：${wDate}\n`+l.map(x=>`${x.d.name.replace(/\n/g,' ')} ${x.d.ml||''}ml × ${x.qty}瓶`).join('\n')+`\n備註：${wNote}\n叫貨人員：${wWho}`;$('wm').value=msg;return {id:Date.now().toString(),date:new Date().toISOString(),delivery:wDate,vendor:wVendor,lines:l,msg,total:l.reduce((a,x)=>a+(Number(x.d.cost)||0)*x.qty,0)}}
 async function saveWineOrder(){let h=wineMessage();if(!h||!confirm('確認儲存叫貨紀錄？'))return;let hs=wineHistory();hs.push(h);try{localStorage.setItem('wineOrdersV3:'+current,JSON.stringify(hs))}catch{alert('儲存失敗');return}try{await navigator.clipboard.writeText(h.msg);alert('已儲存並複製，請貼到 LINE');wineHist()}catch{$('wm').select();alert('已儲存，請手動複製文字，再進入叫貨紀錄');wAmounts={}}}
 function wineHist(){show('order');$('heading').textContent=current+'居酒屋｜酒類叫貨紀錄';$('order').innerHTML='<button class="alt" onclick="wineHub()">返回酒類管理</button><label>月份</label><input id="whm" type="month" value="'+new Date().toLocaleDateString('sv-SE').slice(0,7)+'"><div id="whl"></div>';$('whm').oninput=drawWineHist;drawWineHist()}
