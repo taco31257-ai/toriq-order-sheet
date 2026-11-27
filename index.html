@@ -600,7 +600,7 @@ function foodDisambiguateImport(data){
   const used=new Set();
   list.forEach((p,index)=>{
    let name=p.name;
-   if(index){
+   if(index&&!p.originalName){
     const hint=String(p.subCategory||p.sourceSubCategory||p.category||p.id||index+1).trim();
     name=p.name+'（'+hint+'）';
     let n=2;while(used.has(foodNorm(name)))name=p.name+'（'+hint+'-'+n+++'）';
