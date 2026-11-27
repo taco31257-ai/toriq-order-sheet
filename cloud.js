@@ -103,6 +103,16 @@
   async function pushMasterNow(s, first) {
     const o = readFood(s), h = masterHash(o), last = getRaw('cloud:master:' + s);
     if (h === last || (!last && !first)) return;
+    // 先確認遠端已升級為可以保存「6包／半斤」以及兩店商品備註的版本。
+    // 舊版伺服器會把文字庫存轉成空白；不能先上傳再驗證。
+    const requiresV2 = (o.items||[]).some(i =>
+      String(i.note??'').trim() ||
+      [i.week,i.holiday].some(v=>String(v??'').trim() && !/^[-+]?\d+(?:\.\d+)?$/.test(String(v).trim()))
+    );
+    if(requiresV2){
+      const cap = await api({ action: 'master', store: s });
+      if(cap.stockTextSchema !== 2) throw new Error('雲端試算表程式仍是舊版，禁止上傳含單位安全庫存以免資料再次消失。請將 Apps Script 更新至 v3.2 後重新部署');
+    }
     const r = await api({ action: 'saveMaster', store: s, vendors: o.vendors || [], items: o.items || [] }, true);
     // 避免舊版 GAS 將「6包／半斤」誤轉成空值，或漏存兩店商品備註
     const localById = new Map((o.items || []).map(it => [String(it.id), it]));
