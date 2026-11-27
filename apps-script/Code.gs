@@ -154,7 +154,7 @@ function values_(k) { const sh = sheet_(k); const n = sh.getLastRow(); return n 
 function writeAll_(k, rows) {
   const sh = sheet_(k), w = HEAD[k].length, n = sh.getLastRow();
   if (n > 1) sh.getRange(2, 1, n - 1, w).clearContent();
-  if (rows.length) sh.getRange(2, 1, rows.length, w).setValues(rows);
+  if (rows.length) sh.getRange(2, 1, rows.length, w).setValues(rows.map(r => Array.from({ length: w }, (_, i) => r[i] === undefined ? '' : r[i])));
 }
 const num_ = v => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? '' : Number(v);
 const str_ = v => (v === null || v === undefined) ? '' : String(v);
