@@ -193,7 +193,7 @@ function getMaster_(store) {
   const vendors = vrows.map(r => ({ id: str_(r[0]), name: str_(r[1]).trim(), days: str_(r[2]), note: str_(r[3]) }));
   const items = [], others = [];
   irows.forEach(r => (String(r[c]).trim() ? items : others).push(itemView_(r, store)));
-  return { ok: true, vendors, items, others };
+  return { ok: true, vendors, items, others, stockTextSchema: 2 };
 }
 
 function saveMaster_(store, vendors, items) {
