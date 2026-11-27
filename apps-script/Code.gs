@@ -207,7 +207,7 @@ function saveMaster_(store, vendors, items) {
     if (row) vals.forEach((x, i) => row[i] = x); else { vrows.push(vals); vById[vals[0]] = vals; }
   });
   const iById = {}; irows.forEach(r => iById[String(r[0])] = r);
-  const normItem = x => str_(x).toLowerCase().replace(/[\\s　_\\-－（）()]/g, '');
+  const normItem = x => str_(x).toLowerCase().replace(/[\s　_\-－（）()]/g, '');
   const keep = new Set();
   items.forEach(i => {
     const id = str_(i.id);
