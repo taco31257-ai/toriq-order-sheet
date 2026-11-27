@@ -1,5 +1,5 @@
 /**
- * 鳥久 × 隼｜店內管理系統 — Google 試算表雲端同步（v3.1：兩店共用品項與酒款）
+ * 鳥久 × 隼｜店內管理系統 — Google 試算表雲端同步（v3.2：保留單位文字的安全庫存及兩店各自商品備註）
  *
  * 第一次使用／更新程式：
  *   1. 把下面 SYNC_KEY 改成你的同步密碼（與舊版相同即可，手機不用重新輸入）
@@ -14,12 +14,13 @@ const TZ = 'Asia/Taipei';
 const SH = { vendors: '廠商', items: '品項', wines: '酒款', log: '叫貨紀錄', stats: '月統計', help: '使用說明' };
 const HEAD = {
   vendors: ['廠商ID', '廠商', '送貨星期', '注意事項'],
-  items: ['品項ID', '廠商ID', '廠商', '品名', '單價', '單位', '隼使用台', '隼平日', '隼假日', '鳥久使用台', '鳥久平日', '鳥久假日'],
+  items: ['品項ID', '廠商ID', '廠商', '品名', '單價', '單位', '隼使用台', '隼平日', '隼假日', '鳥久使用台', '鳥久平日', '鳥久假日', '隼商品備註', '鳥久商品備註'],
   wines: ['酒款ID', '酒名', '酒種', '容量ml', '售價', '杯價', '進價', '代理商', '料號', '介紹', '隼使用', '鳥久使用'],
   log: ['單號', '類型', '門市', '叫貨時間', '送貨日期', '廠商', '叫貨人', '品項', '數量', '單位', '單價', '小計', '原始資料']
 };
 const ITEM_STORE_COL = { '隼': 6, '鳥久': 9 };   // 使用台、平日、假日（0 起算）
 const WINE_STORE_COL = { '隼': 10, '鳥久': 11 };
+const ITEM_NOTE_COL = { '隼': 12, '鳥久': 13 };
 
 /* ================= 初始化 ================= */
 function setup() {
@@ -41,10 +42,9 @@ function ensureSheet_(k) {
   const ss = SpreadsheetApp.getActive();
   let sh = ss.getSheetByName(SH[k]);
   if (!sh) sh = ss.insertSheet(SH[k]);
-  if (sh.getLastRow() === 0) {
-    sh.getRange(1, 1, 1, HEAD[k].length).setValues([HEAD[k]]).setFontWeight('bold').setBackground('#e9eee7');
-    sh.setFrozenRows(1);
-  }
+  if (sh.getLastRow() === 0) sh.setFrozenRows(1);
+  // 新增欄位只更新標題，不移動或清除舊資料（品項表新增兩店商品備註）
+  sh.getRange(1, 1, 1, HEAD[k].length).setValues([HEAD[k]]).setFontWeight('bold').setBackground('#e9eee7');
   return sh;
 }
 
@@ -184,7 +184,7 @@ function loadCatalog_() {
 function itemView_(r, store) {
   const c = ITEM_STORE_COL[store];
   return { id: str_(r[0]), vendor: str_(r[1]), name: str_(r[3]).trim(), cat: str_(r[c]).trim(), price: Number(num_(r[4]) || 0),
-    unit: str_(r[5]), week: str_(r[c + 1]), holiday: str_(r[c + 2]) };
+    unit: str_(r[5]), week: str_(r[c + 1]), holiday: str_(r[c + 2]), note: str_(r[ITEM_NOTE_COL[store]]) };
 }
 
 function getMaster_(store) {
@@ -211,13 +211,14 @@ function saveMaster_(store, vendors, items) {
   items.forEach(i => {
     const id = str_(i.id); keep.add(id);
     let row = iById[id];
-    if (!row) { row = [id, '', '', '', '', '', '', '', '', '', '', '']; irows.push(row); iById[id] = row; }
+    if (!row) { row = Array(HEAD.items.length).fill(''); row[0] = id; irows.push(row); iById[id] = row; }
     const vr = vById[str_(i.vendor)];
     row[1] = str_(i.vendor); row[2] = vr ? vr[1] : row[2]; row[3] = str_(i.name).trim(); row[4] = num_(i.price); row[5] = str_(i.unit);
-    row[c] = str_(i.cat).trim() || '備品'; row[c + 1] = num_(i.week); row[c + 2] = num_(i.holiday);
+    row[c] = str_(i.cat).trim() || '備品'; row[c + 1] = str_(i.week); row[c + 2] = str_(i.holiday);
+    row[ITEM_NOTE_COL[store]] = str_(i.note);
   });
   // 本店不再使用：清空本店欄位，共用資料保留
-  irows.forEach(r => { if (!keep.has(String(r[0])) && String(r[c]).trim()) { r[c] = ''; r[c + 1] = ''; r[c + 2] = ''; } });
+  irows.forEach(r => { if (!keep.has(String(r[0])) && String(r[c]).trim()) { r[c] = ''; r[c + 1] = ''; r[c + 2] = ''; r[ITEM_NOTE_COL[store]] = ''; } });
   writeAll_('vendors', vrows); writeAll_('items', irows);
   return getMaster_(store);
 }
