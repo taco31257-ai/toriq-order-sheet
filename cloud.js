@@ -107,8 +107,11 @@
     // 避免舊版 GAS 將「6包／半斤」誤轉成空值，或漏存兩店商品備註
     const localById = new Map((o.items || []).map(it => [String(it.id), it]));
     const returned = new Map((r.items || []).map(it => [String(it.id), it]));
+    const localVendorName = id => ((o.vendors||[]).find(v=>String(v.id)===String(id))||{}).name||'';
+    const remoteVendorName = id => ((r.vendors||[]).find(v=>String(v.id)===String(id))||{}).name||'';
+    const remoteByName = new Map((r.items||[]).map(it=>[norm(remoteVendorName(it.vendor))+'|'+norm(it.name),it]));
     const invalid = [...localById.entries()].filter(([id, it]) => {
-      const remote = returned.get(id);
+      const remote = returned.get(id) || remoteByName.get(norm(localVendorName(it.vendor))+'|'+norm(it.name));
       if (!remote) return true;
       for (const field of ['week', 'holiday', 'note']) {
         if (String(it[field] ?? '').trim() !== String(remote[field] ?? '').trim()) return true;
