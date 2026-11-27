@@ -331,7 +331,7 @@ const WINE_PRICING_RULES={
 /* 380ml 以下：價格2倍，每瓶最少賺600，無單杯 */
 const SMALL_BOTTLE_RULE={multiplier:2,min:600,cupRate:0};
 function winePriceEstimate(ml,taxIncludedCost){
- const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:(n>0&&n<=380)?SMALL_BOTTLE_RULE:null),cost=Number(taxIncludedCost);
+ const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:(n>=400&&n<=600)?WINE_PRICING_RULES[500]:n===1500?WINE_PRICING_RULES[1800]:(n>0&&n<=380)?SMALL_BOTTLE_RULE:null),cost=Number(taxIncludedCost);
  if(!rule||!Number.isFinite(cost)||cost<=0)return null;
  // 整瓶售價十位及個位都是0，故無條件進位到百元；單杯個位是0，進位到十元
  const ceilStep=(x,step)=>Math.ceil((x-1e-8)/step)*step;
