@@ -5,7 +5,7 @@
  #printarea .tag{box-sizing:border-box!important;display:flex!important;width:50mm!important;height:80mm!important;margin:0!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important;break-after:page;page-break-after:always;}
  #printarea .tag:last-child{break-after:auto;page-break-after:auto;}
 }
-</style><header id="top"><b id="heading">鳥久 × 隼｜店內管理系統</b><div class="muted" style="color:#ddd">V6.7 匯入功能置頂</div></header><div id="nav" style="max-width:1100px;margin:auto;padding:12px;display:none"><button onclick="home()">返回店別</button> <button onclick="menu()">功能首頁</button></div><section id="landing" style="max-width:700px;margin:24px auto"></section><main id="wine" style="display:none"><section><button class="alt" onclick="wineHub()">返回酒類管理</button><h2>01 酒款資料庫</h2><div class="row"><select id="shop" hidden style="display:none"><option>隼</option><option>鳥久</option></select><select id="filter" hidden style="display:none"><option>全部</option><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div id="manualTabs" class="wine-tabs"></div><label>搜尋酒名／代理商</label><input id="search" placeholder="例如：不動、久利"><div id="count" class="muted"></div><div id="list" class="list"></div><div class="row"><button id="new" class="alt">＋ 新增酒款</button><button id="export" class="alt">匯出 CSV</button></div><label>舊版 CSV 匯入（仍可使用）</label><input type="file" id="import" accept=".csv"><p class="muted">目前為公開手機測試站：隼酒款名稱、分類、容量、整瓶／單杯售價與介紹文來自店內提供的資料；進價未公開。編輯與匯入資料只存本機瀏覽器，兩店互不共用。</p><div id="quoteImporter" class="importer"><h2>酒商報價單上傳 → 自動整理入庫（樂酌格式已支援）</h2><p class="muted">支援 CSV、Excel（.xls / .xlsx）、文字型 PDF。已新增樂酌「商品型錄」分行辨識。PDF 會試著整理文字，但不同酒商排版可能辨識不完整，請一定檢查後再匯入。掃描照片及複雜 PDF 尚需雲端 AI 辨識。</p><label>報價單檔案</label><input type="file" id="quoteFile" accept=".csv,.tsv,.xls,.xlsx,.pdf,application/pdf"><label>指定酒商／代理商（選填，會覆蓋檔案中的空白代理商）</label><input id="quoteSupplier" placeholder="例如：樂酌、久利、瑩頤"><div class="row"><button id="rakuQuick" type="button" style="background:#53643c">一鍵載入樂酌型錄（123筆）</button></div><p class="muted">樂酌型錄已先整理好名稱、容量、料號及分類；點擊可加入目前選定店別，<b>不含通路價與店內進價</b>。同料號不會重複新增。</p><div class="row"><button id="quoteAnalyze" type="button">辨識報價單</button><button class="alt" id="quoteClear" type="button">清除預覽</button></div><div class="quote-note">手機提醒：從 LINE 開啟時，建議點右上角「⋯」改用 Safari / Chrome，再選擇 PDF。PDF 需使用網路載入解析元件。<br>「通路價」是型錄原文，<b>不保證等於實際進貨成本</b>；請確認後才存入進價欄。</div><div id="quoteStatus" role="status" class="muted"></div><div id="quoteReview" class="quote-review"></div></div><h2>02 酒款編輯</h2><label>酒款名稱</label><input id="name"><div class="row"><div><label>分類</label><select id="type"><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div><label>容量 ml</label><input id="ml"></div></div><div class="row"><div><label>整瓶售價</label><input id="price"></div><div><label>單杯價格</label><input id="cup"></div><div><label>進價</label><input id="cost"></div></div><label>代理商</label><input id="supplier"><label>酒款介紹（完整保留）</label><textarea id="desc" rows="7"></textarea><div class="row"><button id="save">儲存酒款</button><button class="alt" id="del">刪除酒款</button></div></section><section><h2>03 酒標預覽與列印</h2><label>版型：原版優化</label><select id="template" hidden style="display:none"><option value="normal">原版優化</option><option value="long">長文介紹</option><option value="minimal">極簡精品</option><option value="classic">日式職人</option></select><label>介紹文字體上限（pt）</label><input id="font" type="number" min="7" max="12" step="0.5" value="10"><div class="preview" id="preview"></div><p id="warning"></p><label>列印張數</label><input id="qty" type="number" min="1" max="100" value="1"><div class="row" style="margin-top:12px"><button id="add">加入批次清單</button><button id="print">直接列印</button></div><h2 style="margin-top:24px">待列印清單</h2><div id="queue"></div><button id="batch" style="width:100%;margin-top:10px">列印全部</button><p class="muted">Windows 列印視窗選 XP-490B，紙張 50 × 80 mm、比例 100%、關閉頁首尾。手機可預覽，尚無 USB 遠端列印。</p></section></main><section id="shared" style="display:none;max-width:1120px;margin:16px auto">
+</style><header id="top"><b id="heading">鳥久 × 隼｜店內管理系統</b><div class="muted" style="color:#ddd">V6.8 修正叫貨匯入儲存空間不足</div></header><div id="nav" style="max-width:1100px;margin:auto;padding:12px;display:none"><button onclick="home()">返回店別</button> <button onclick="menu()">功能首頁</button></div><section id="landing" style="max-width:700px;margin:24px auto"></section><main id="wine" style="display:none"><section><button class="alt" onclick="wineHub()">返回酒類管理</button><h2>01 酒款資料庫</h2><div class="row"><select id="shop" hidden style="display:none"><option>隼</option><option>鳥久</option></select><select id="filter" hidden style="display:none"><option>全部</option><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div id="manualTabs" class="wine-tabs"></div><label>搜尋酒名／代理商</label><input id="search" placeholder="例如：不動、久利"><div id="count" class="muted"></div><div id="list" class="list"></div><div class="row"><button id="new" class="alt">＋ 新增酒款</button><button id="export" class="alt">匯出 CSV</button></div><label>舊版 CSV 匯入（仍可使用）</label><input type="file" id="import" accept=".csv"><p class="muted">目前為公開手機測試站：隼酒款名稱、分類、容量、整瓶／單杯售價與介紹文來自店內提供的資料；進價未公開。編輯與匯入資料只存本機瀏覽器，兩店互不共用。</p><div id="quoteImporter" class="importer"><h2>酒商報價單上傳 → 自動整理入庫（樂酌格式已支援）</h2><p class="muted">支援 CSV、Excel（.xls / .xlsx）、文字型 PDF。已新增樂酌「商品型錄」分行辨識。PDF 會試著整理文字，但不同酒商排版可能辨識不完整，請一定檢查後再匯入。掃描照片及複雜 PDF 尚需雲端 AI 辨識。</p><label>報價單檔案</label><input type="file" id="quoteFile" accept=".csv,.tsv,.xls,.xlsx,.pdf,application/pdf"><label>指定酒商／代理商（選填，會覆蓋檔案中的空白代理商）</label><input id="quoteSupplier" placeholder="例如：樂酌、久利、瑩頤"><div class="row"><button id="rakuQuick" type="button" style="background:#53643c">一鍵載入樂酌型錄（123筆）</button></div><p class="muted">樂酌型錄已先整理好名稱、容量、料號及分類；點擊可加入目前選定店別，<b>不含通路價與店內進價</b>。同料號不會重複新增。</p><div class="row"><button id="quoteAnalyze" type="button">辨識報價單</button><button class="alt" id="quoteClear" type="button">清除預覽</button></div><div class="quote-note">手機提醒：從 LINE 開啟時，建議點右上角「⋯」改用 Safari / Chrome，再選擇 PDF。PDF 需使用網路載入解析元件。<br>「通路價」是型錄原文，<b>不保證等於實際進貨成本</b>；請確認後才存入進價欄。</div><div id="quoteStatus" role="status" class="muted"></div><div id="quoteReview" class="quote-review"></div></div><h2>02 酒款編輯</h2><label>酒款名稱</label><input id="name"><div class="row"><div><label>分類</label><select id="type"><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div><label>容量 ml</label><input id="ml"></div></div><div class="row"><div><label>整瓶售價</label><input id="price"></div><div><label>單杯價格</label><input id="cup"></div><div><label>進價</label><input id="cost"></div></div><label>代理商</label><input id="supplier"><label>酒款介紹（完整保留）</label><textarea id="desc" rows="7"></textarea><div class="row"><button id="save">儲存酒款</button><button class="alt" id="del">刪除酒款</button></div></section><section><h2>03 酒標預覽與列印</h2><label>版型：原版優化</label><select id="template" hidden style="display:none"><option value="normal">原版優化</option><option value="long">長文介紹</option><option value="minimal">極簡精品</option><option value="classic">日式職人</option></select><label>介紹文字體上限（pt）</label><input id="font" type="number" min="7" max="12" step="0.5" value="10"><div class="preview" id="preview"></div><p id="warning"></p><label>列印張數</label><input id="qty" type="number" min="1" max="100" value="1"><div class="row" style="margin-top:12px"><button id="add">加入批次清單</button><button id="print">直接列印</button></div><h2 style="margin-top:24px">待列印清單</h2><div id="queue"></div><button id="batch" style="width:100%;margin-top:10px">列印全部</button><p class="muted">Windows 列印視窗選 XP-490B，紙張 50 × 80 mm、比例 100%、關閉頁首尾。手機可預覽，尚無 USB 遠端列印。</p></section></main><section id="shared" style="display:none;max-width:1120px;margin:16px auto">
 <div class="row"><button class="alt" onclick="wineHub()">← 酒類管理</button></div>
 <h2>共用酒品主檔｜兩店共用商品、各店獨立使用</h2>
 <div class="quote-note">此功能僅存在目前裝置的瀏覽器，不會跨手機同步。 共用酒款預設鳥久、隼兩店都使用；可手動取消任一店。 匯入符合規則的有效報價，將直接覆蓋兩店售價（500／720／900／1800ml），單杯與整瓶皆進位至十元。2026/11/27稅別規則：瑩頤、樂酌報價未稅（加5%，四捨五入至元）；其他廠商原報價已含稅。特殊搭售價仍需檢查條件。請勿在公用手機匯入正式進價；正式資料上雲端前，必須先設置登入、權限與私有資料庫。</div>
@@ -595,9 +595,56 @@ async function readFoodImport(file){
  if(/\.xlsx?$/i.test(file.name))return foodExcelPayload(file);
  throw Error('請選擇原始 Excel 或叫貨系統導入 JSON');
 }
+
+/* 大型匯入備份改存 IndexedDB，避免在 localStorage 複製完整資料而觸發容量上限 */
+function foodImportBackupDb(){
+ return new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window))return reject(new Error('此瀏覽器不支援 IndexedDB'));
+  const req=indexedDB.open('toriq-private-backups',1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('snapshots'))db.createObjectStore('snapshots')};
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error||new Error('備份資料庫無法開啟'));
+ });
+}
+async function foodBackupWrite(key,value){
+ const db=await foodImportBackupDb();
+ try{
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction('snapshots','readwrite');
+   tx.objectStore('snapshots').put(value,key);
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('備份寫入失敗'));
+   tx.onabort=()=>reject(tx.error||new Error('備份中斷'));
+  });
+ }finally{db.close()}
+}
+async function foodBackupRead(key){
+ const db=await foodImportBackupDb();
+ try{return await new Promise((resolve,reject)=>{
+  const tx=db.transaction('snapshots','readonly'),r=tx.objectStore('snapshots').get(key);
+  r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('備份讀取失敗'));
+ })}finally{db.close()}
+}
+async function foodMigrateLegacyCache(){
+ const keys=['toriqFoodImportBackupV1','toriqFoodImportCatalogV1'];
+ let freed=0;
+ for(const key of keys){
+  const raw=localStorage.getItem(key);
+  if(!raw)continue;
+  // 寫入、再次讀回確認後才移除 localStorage 中的重複備份／目錄
+  await foodBackupWrite('legacy:'+key,raw);
+  if(await foodBackupRead('legacy:'+key)!==raw)throw Error('舊備份驗證失敗，沒有移除原資料');
+  localStorage.removeItem(key);freed+=raw.length;
+ }
+ return freed;
+}
+function foodStorageReport(){
+ let size=0;
+ for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i)||'';size+=key.length+(localStorage.getItem(key)||'').length}
+ return Math.round(size*2/1024);
+}
 function foodImportPanel(){
  const host=document.createElement('div');host.className='importer';host.style.marginTop='20px';
- host.innerHTML='<h2>兩店叫貨品項匯入（Excel／JSON）</h2><p class="muted">上傳原始「鳥久隼合併料理成本叫貨」Excel 或已整理的 JSON。資料在本裝置讀取；匯入時同時更新兩店品項與成本，保留各店原有叫貨紀錄、不刪除手動新增品項。備註中的帳號與密碼不會匯入。</p><input type="file" id="foodImportFile" accept=".xlsx,.xls,.json"><div id="foodImportStatus" class="muted" role="status" style="margin:10px 0"></div><button id="foodImportGo" type="button" disabled>確認導入鳥久與隼</button>';
+ host.innerHTML='<h2>兩店叫貨品項匯入（Excel／JSON）</h2><p class="muted">上傳原始「鳥久隼合併料理成本叫貨」Excel 或已整理的 JSON。資料在本裝置讀取；匯入時同時更新兩店品項與成本，保留各店原有叫貨紀錄、不刪除手動新增品項。備註中的帳號與密碼不會匯入。舊版匯入備份會先搬到 IndexedDB，確認備份後才釋放原本重複占用的空間。</p><input type="file" id="foodImportFile" accept=".xlsx,.xls,.json"><div id="foodImportStatus" class="muted" role="status" style="margin:10px 0"></div><button id="foodImportGo" type="button" disabled>確認導入鳥久與隼</button>';
  const file=host.querySelector('#foodImportFile'),status=host.querySelector('#foodImportStatus'),go=host.querySelector('#foodImportGo');
  file.onchange=async()=>{
   foodImportDraft=null;go.disabled=true;
@@ -618,17 +665,23 @@ function foodImportPanel(){
    go.disabled=false;
   }catch(err){status.textContent='讀取失敗：'+err.message}
  };
- go.onclick=()=>{
+ go.onclick=async()=>{
   const data=foodImportDraft;if(!data)return;
-  if(!confirm('確認導入本機鳥久／隼兩店的叫貨品項及進價？\n同廠商同品名會更新價格、安全庫存及站區；既有叫貨紀錄不會變動。\n未提供有效價格的品項將保留原進價。\n這項操作會先建立本機備份。'))return;
+  if(!confirm('確認導入鳥久與隼兩店的叫貨資料？\n將更新進價、安全庫存與商品備註，現有叫貨紀錄保持不變。\n備份將儲存在本瀏覽器 IndexedDB，避免因備份複製導致容量不足。'))return;
+  go.disabled=true;status.textContent='正在建立安全備份並檢查空間…';
   const backups={},outputs={},stats={};
+  let startedWrite=false;
   try{
    for(const shop of ['鳥久','隼'])backups[shop]=localStorage.getItem('ordersV2:'+shop);
-   const past=localStorage.getItem('toriqFoodImportCatalogV1');
-   localStorage.setItem('toriqFoodImportBackupV1',JSON.stringify({created:new Date().toISOString(),stores:backups,catalog:past}));
+   const checkpoint={created:new Date().toISOString(),stores:backups,source:data.source};
+   await foodBackupWrite('food:latest',checkpoint);
+   const check=await foodBackupRead('food:latest');
+   if(!check||check.stores?.['鳥久']!==backups['鳥久']||check.stores?.['隼']!==backups['隼'])throw Error('安全備份無法驗證；沒有更改任何叫貨資料');
+   // 升級舊版導入的重複備份；搬移完後才刪除本機儲存空間的舊副本
+   const freed=await foodMigrateLegacyCache();
    for(const shop of ['鳥久','隼']){
     const old=JSON.parse(backups[shop]||'null')||{vendors:[],items:[],history:[]};
-    const next={...old,vendors:Array.isArray(old.vendors)?old.vendors.slice():[],items:Array.isArray(old.items)?old.items.slice():[],history:Array.isArray(old.history)?old.history:[]};
+    const next={...old,vendors:Array.isArray(old.vendors)?old.vendors.map(v=>({...v})):[],items:Array.isArray(old.items)?old.items.map(it=>({...it})):[],history:Array.isArray(old.history)?old.history:[]};
     const byVendor=new Map(next.vendors.map(v=>[foodNorm(v.name),v]));
     const shopVendorNames=new Set(data.stores[shop].map(it=>foodNorm(it.vendor)));
     for(const source of data.vendors){
@@ -646,10 +699,9 @@ function foodImportPanel(){
      let d=byItem.get(key);
      if(!d){d={id:'imp-i:'+shop+':'+String(it.sourceId||foodNorm(it.name)),vendor:v.id,name:it.name};next.items.push(d);byItem.set(key,d);created++}
      else updated++;
-     // 只改採購資料；保留原本的歷史紀錄及人工補充欄位
      d.cat=it.cat||d.cat||'備品';d.unit=it.unit||d.unit||'';
      d.week=it.week??d.week??'';d.holiday=it.holiday??d.holiday??'';
-     if(it.price!=null&&Number(it.price)>0)d.price=Number(it.price);
+     if(it.price!=null&&Number(it.price)>=0)d.price=Number(it.price);
      else if(d.price==null)d.price=0;
      d.frequency=it.frequency||'';d.needsStationReview=!!it.needsStationReview;
      d.sourceCategory=it.sourceCategory||'';d.sourceId=String(it.sourceId||'');
@@ -657,17 +709,27 @@ function foodImportPanel(){
     }
     outputs[shop]=next;stats[shop]={created,updated};
    }
-   // 兩店寫入成功後才重畫；雲端同步透過既有 cloud.js 依各店設定處理
+   // 不另存完整重複目錄。兩店只保留給叫貨系統真正需要的項目。
+   startedWrite=true;
    for(const shop of ['鳥久','隼'])localStorage.setItem('ordersV2:'+shop,JSON.stringify(outputs[shop]));
-   localStorage.setItem('toriqFoodImportCatalogV1',JSON.stringify({format:data.format,source:data.source,products:data.products,vendors:data.vendors,updated:new Date().toISOString()}));
+   for(const shop of ['鳥久','隼']){
+    const actual=JSON.parse(localStorage.getItem('ordersV2:'+shop)||'null');
+    if(!actual||actual.items.length!==outputs[shop].items.length||actual.history.length!==outputs[shop].history.length)throw Error(shop+' 寫入後驗證失敗');
+   }
+   if(current){od=getOrder();vendor=od.vendors[0]?.id||'';amounts={}}
+   status.textContent='導入成功！鳥久新增 '+stats['鳥久'].created+'／更新 '+stats['鳥久'].updated+' 筆；隼新增 '+stats['隼'].created+'／更新 '+stats['隼'].updated+' 筆。歷史叫貨紀錄沒有變動。'+(freed?'已安全搬移舊備份約 '+Math.round(freed*2/1024)+' KB。':'');
+   alert(status.textContent+'\n若使用雲端同步，請確認同步後另一台裝置是否顯示更新。');
+   foodImportDraft=null;drawOrder();
   }catch(err){
-   for(const shop of ['鳥久','隼'])try{if(backups[shop]!==undefined){if(backups[shop]===null)localStorage.removeItem('ordersV2:'+shop);else localStorage.setItem('ordersV2:'+shop,backups[shop])}}catch{}
-   status.textContent='匯入未完成：'+err.message;return;
+   if(startedWrite)for(const shop of ['鳥久','隼']){
+    try{if(backups[shop]===null)localStorage.removeItem('ordersV2:'+shop);else localStorage.setItem('ordersV2:'+shop,backups[shop])}catch(restoreErr){console.error('還原失敗',shop,restoreErr)}
+   }
+   if(current){od=getOrder();vendor=od.vendors[0]?.id||''}
+   const quota=err?.name==='QuotaExceededError'||/quota|exceeded the quota/i.test(String(err?.message||''));
+   status.textContent=quota?'瀏覽器 localStorage 空間仍不足，已停止匯入並嘗試還原原資料。安全備份保存在本裝置 IndexedDB，請不要清除網站資料。':'匯入未完成：'+err.message;
+   if(quota){status.textContent+=' 現有儲存量約 '+foodStorageReport()+' KB。可先下載備份，再檢查是否有舊版重複檔案；不要直接清除所有網站資料。'}
+   go.disabled=false;
   }
-  if(current){od=getOrder();vendor=od.vendors[0]?.id||'';amounts={}}
-  status.textContent='導入完成！鳥久：新增 '+stats['鳥久'].created+'、更新 '+stats['鳥久'].updated+'；隼：新增 '+stats['隼'].created+'、更新 '+stats['隼'].updated+'。叫貨紀錄維持原樣，已存本機備份。';
-  alert(status.textContent+'\n若有開啟雲端同步，請確認同步狀態後再使用其他裝置。');
-  foodImportDraft=null;go.disabled=true;drawOrder();
  };
  return host;
 }
