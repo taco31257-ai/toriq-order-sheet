@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>鳥久 × 隼｜店內管理系統</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f1ed;color:#282722;font:15px system-ui,sans-serif}header{background:#252622;color:white;padding:20px}header b{font-size:23px}main{max-width:1100px;margin:auto;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}section{background:white;border:1px solid #dedbd3;border-radius:12px;padding:18px}h2{font-size:18px;margin:0 0 14px}input,select,textarea,button{font:inherit;border:1px solid #ccc;border-radius:7px;padding:9px;max-width:100%}input,select,textarea{width:100%;background:white}button{cursor:pointer;background:#333c34;color:white;border:0}button.alt{background:#e9e7e1;color:#222}label{display:block;font-size:12px;color:#666;margin:8px 0 4px}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.list{height:260px;overflow:auto;margin:10px 0}.item{padding:10px;border-bottom:1px solid #eee;cursor:pointer}.item:hover,.active{background:#e9eee7}.muted{color:#777;font-size:12px}.preview{background:#e9e7e1;padding:20px;display:flex;justify-content:center;overflow:auto}.tag{width:50mm;height:80mm;background:white;color:black;padding:2.5mm;display:flex;flex-direction:column;overflow:hidden;font-family:Arial,'Microsoft JhengHei',sans-serif;flex-shrink:0}.tag .name{font-weight:bold;text-align:center;font-size:11pt;line-height:1.15}.tag .price{text-align:center;font-size:9pt;margin:1mm 0}.tag .desc{flex:1;min-height:0;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.28;font-size:10pt}.tag footer{display:flex;justify-content:space-between;align-items:end;font-size:8pt;margin-top:1mm}.tag footer small{font-size:6.5pt}.tag.long .price{order:3;border-top:1px solid #555}.tag.long footer{order:4}.tag.minimal .name,.tag.minimal .price{text-align:left}.tag.classic{border:1px solid black;padding:2mm}.tag.classic .name{font-family:serif}.tag:not(.long) .desc{border-top:1px solid #777;padding-top:1mm}#printarea{display:none}#warning{color:#a33;font-size:12px} @media(max-width:700px){main{grid-template-columns:1fr}} @page{size:50mm 80mm;margin:0}@media print{body{background:white}header,main,#nav,#landing,#order{display:none!important}#printarea{display:block}.tag{break-after:page;page-break-after:always}.tag:last-child{break-after:auto;page-break-after:auto}} .wine-tabs{display:flex;gap:6px;margin:10px 0;position:sticky;top:0;background:white;padding:8px 0;z-index:4}.wine-tabs button{flex:1;white-space:nowrap;padding:10px 4px}.wine-tabs button[aria-pressed=false]{background:#e9e7e1;color:#222}.float-order{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,1100px);background:#28362d;color:white;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -3px 15px #0002}.float-order button{background:white;color:#28362d;flex-shrink:0}.float-order small{display:block;color:#eee}#order:has(.float-order){padding-bottom:110px}#wineReview,#foodReview{scroll-margin-top:12px}@media print{.float-order{display:none!important}}.importer{margin-top:16px;border:1px solid #c7c9bc;border-radius:10px;padding:15px;background:#f8f9f5}.quote-review{margin-top:12px;max-height:450px;overflow:auto}.quote-table{width:100%;border-collapse:collapse;font-size:12px;min-width:670px}.quote-table th,.quote-table td{border-bottom:1px solid #ddd;padding:6px;text-align:left}.quote-table input,.quote-table select{padding:6px;font-size:12px}.quote-table input[type=checkbox]{width:17px}.importer .row{margin:9px 0}.quote-note{background:#fff3d5;border-radius:7px;padding:10px;font-size:12px;margin:8px 0}.importer button{white-space:nowrap}@media(max-width:700px){.quote-review{width:100%}}</style><header id="top"><b id="heading">鳥久 × 隼｜店內管理系統</b><div class="muted" style="color:#ddd">V5.2 兩店共用酒品主檔與匯入</div></header><div id="nav" style="max-width:1100px;margin:auto;padding:12px;display:none"><button onclick="home()">返回店別</button> <button onclick="menu()">功能首頁</button></div><section id="landing" style="max-width:700px;margin:24px auto"></section><main id="wine" style="display:none"><section><button class="alt" onclick="wineHub()">返回酒類管理</button><h2>01 酒款資料庫</h2><div class="row"><select id="shop" hidden style="display:none"><option>隼</option><option>鳥久</option></select><select id="filter" hidden style="display:none"><option>全部</option><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div id="manualTabs" class="wine-tabs"></div><label>搜尋酒名／代理商</label><input id="search" placeholder="例如：不動、久利"><div id="count" class="muted"></div><div id="list" class="list"></div><div class="row"><button id="new" class="alt">＋ 新增酒款</button><button id="export" class="alt">匯出 CSV</button></div><label>舊版 CSV 匯入（仍可使用）</label><input type="file" id="import" accept=".csv"><p class="muted">目前為公開手機測試站：隼酒款名稱、分類、容量、整瓶／單杯售價與介紹文來自店內提供的資料；進價未公開。編輯與匯入資料只存本機瀏覽器，兩店互不共用。</p><div id="quoteImporter" class="importer"><h2>酒商報價單上傳 → 自動整理入庫（樂酌格式已支援）</h2><p class="muted">支援 CSV、Excel（.xls / .xlsx）、文字型 PDF。已新增樂酌「商品型錄」分行辨識。PDF 會試著整理文字，但不同酒商排版可能辨識不完整，請一定檢查後再匯入。掃描照片及複雜 PDF 尚需雲端 AI 辨識。</p><label>報價單檔案</label><input type="file" id="quoteFile" accept=".csv,.tsv,.xls,.xlsx,.pdf,application/pdf"><label>指定酒商／代理商（選填，會覆蓋檔案中的空白代理商）</label><input id="quoteSupplier" placeholder="例如：樂酌、久利、瑩頤"><div class="row"><button id="rakuQuick" type="button" style="background:#53643c">一鍵載入樂酌型錄（123筆）</button></div><p class="muted">樂酌型錄已先整理好名稱、容量、料號及分類；點擊可加入目前選定店別，<b>不含通路價與店內進價</b>。同料號不會重複新增。</p><div class="row"><button id="quoteAnalyze" type="button">辨識報價單</button><button class="alt" id="quoteClear" type="button">清除預覽</button></div><div class="quote-note">手機提醒：從 LINE 開啟時，建議點右上角「⋯」改用 Safari / Chrome，再選擇 PDF。PDF 需使用網路載入解析元件。<br>「通路價」是型錄原文，<b>不保證等於實際進貨成本</b>；請確認後才存入進價欄。</div><div id="quoteStatus" role="status" class="muted"></div><div id="quoteReview" class="quote-review"></div></div><h2>02 酒款編輯</h2><label>酒款名稱</label><input id="name"><div class="row"><div><label>分類</label><select id="type"><option>清酒</option><option>燒酎</option><option>利口酒</option><option>其他</option></select></div><div><label>容量 ml</label><input id="ml"></div></div><div class="row"><div><label>整瓶售價</label><input id="price"></div><div><label>單杯價格</label><input id="cup"></div><div><label>進價</label><input id="cost"></div></div><label>代理商</label><input id="supplier"><label>酒款介紹（完整保留）</label><textarea id="desc" rows="7"></textarea><div class="row"><button id="save">儲存酒款</button><button class="alt" id="del">刪除酒款</button></div></section><section><h2>03 酒標預覽與列印</h2><label>版型：原版優化</label><select id="template" hidden style="display:none"><option value="normal">原版優化</option><option value="long">長文介紹</option><option value="minimal">極簡精品</option><option value="classic">日式職人</option></select><label>介紹文字體上限（pt）</label><input id="font" type="number" min="7" max="12" step="0.5" value="10"><div class="preview" id="preview"></div><p id="warning"></p><label>列印張數</label><input id="qty" type="number" min="1" max="100" value="1"><div class="row" style="margin-top:12px"><button id="add">加入批次清單</button><button id="print">直接列印</button></div><h2 style="margin-top:24px">待列印清單</h2><div id="queue"></div><button id="batch" style="width:100%;margin-top:10px">列印全部</button><p class="muted">Windows 列印視窗選 XP-490B，紙張 50 × 80 mm、比例 100%、關閉頁首尾。手機可預覽，尚無 USB 遠端列印。</p></section></main><section id="shared" style="display:none;max-width:1120px;margin:16px auto">
 <div class="row"><button class="alt" onclick="wineHub()">← 酒類管理</button></div>
 <h2>共用酒品主檔｜兩店共用商品、各店獨立使用</h2>
-<div class="quote-note">此功能僅存在目前裝置的瀏覽器，不會跨手機同步。2026/11/27稅別規則：瑩頤、樂酌報價未稅（加5%，四捨五入至元）；其他廠商原報價已含稅。特殊搭售價仍需檢查條件。請勿在公用手機匯入正式進價；正式資料上雲端前，必須先設置登入、權限與私有資料庫。</div>
+<div class="quote-note">此功能僅存在目前裝置的瀏覽器，不會跨手機同步。 共用酒款預設鳥久、隼兩店都使用；可手動取消任一店。2026/11/27稅別規則：瑩頤、樂酌報價未稅（加5%，四捨五入至元）；其他廠商原報價已含稅。特殊搭售價仍需檢查條件。請勿在公用手機匯入正式進價；正式資料上雲端前，必須先設置登入、權限與私有資料庫。</div>
 <label>匯入共用酒品主檔（CSV 或 Excel）</label>
 <input id="sharedFile" type="file" accept=".csv,.xlsx,.xls,text/csv">
 <div class="row" style="margin:10px 0">
@@ -182,7 +182,40 @@ qi('quoteClear').onclick=()=>{quoteCandidates=[];qi('quoteFile').value='';quoteD
 /* 共用主檔：商品跨店共用、店別售價與酒標獨立，廠商多報價保留原始來源；僅本機儲存 */
 const SHARED_KEY='toriqSharedWineLocalV1';
 let sharedDB={products:[],quotes:[]},sharedPending=[];
-function sharedLoad(){try{let x=JSON.parse(localStorage.getItem(SHARED_KEY));if(x&&Array.isArray(x.products)&&Array.isArray(x.quotes)){sharedDB=x;let changed=false;for(const q of sharedDB.quotes){if(q.tax==='稅別待確認'){q.tax=['瑩頤','樂酌'].includes(q.supplier)?'未稅':'已含稅';q.vat=q.raw>0?Math.round((q.raw*(q.tax==='未稅'?1.05:1))+0.000001):0;changed=true}}if(changed)localStorage.setItem(SHARED_KEY,JSON.stringify(sharedDB))}}catch(e){}}
+function sharedSyncToStores(p){
+ p.stores=p.stores||{'鳥久':true,'隼':true};
+ for(const shop of ['鳥久','隼']){
+  if(!p.stores[shop])continue;
+  const list=db&&db[shop];
+  if(!Array.isArray(list))continue;
+  const exists=list.some(d=>sharedNorm(d.name)===sharedNorm(p.name)&&Number(d.ml)===Number(p.ml));
+  if(!exists)list.push({name:p.name,type:p.type,ml:p.ml,price:0,cup:0,cost:'',supplier:p.suppliers?.[0]||'',desc:''});
+ }
+}
+function sharedLoad(){
+ try{
+  const x=JSON.parse(localStorage.getItem(SHARED_KEY));
+  if(!(x&&Array.isArray(x.products)&&Array.isArray(x.quotes)))return;
+  sharedDB=x;let changed=false, synced=false;
+  for(const q of sharedDB.quotes){
+   if(q.tax==='稅別待確認'){
+    q.tax=['瑩頤','樂酌'].includes(q.supplier)?'未稅':'已含稅';
+    q.vat=q.raw>0?Math.round(q.raw*(q.tax==='未稅'?1.05:1)+0.000001):0;
+    changed=true;
+   }
+  }
+  const migrateKey='toriqSharedBothStoresDefaultMigrationV1';
+  if(!localStorage.getItem(migrateKey)){
+   for(const p of sharedDB.products){
+    p.stores={'鳥久':true,'隼':true};sharedSyncToStores(p);
+   }
+   changed=true;synced=true;
+   localStorage.setItem(migrateKey,'1');
+  }
+  if(changed)localStorage.setItem(SHARED_KEY,JSON.stringify(sharedDB));
+  if(synced)persist();
+ }catch(e){console.warn('shared load:',e)}
+}
 function sharedSave(){try{localStorage.setItem(SHARED_KEY,JSON.stringify(sharedDB));return true}catch(e){alert('共用酒品庫本機儲存失敗。請匯出備份，可能已超過瀏覽器可用空間。');return false}}
 function sharedNorm(s){return String(s||'').toLowerCase().replace(/[\s　_\-]+/g,'')}
 function sharedKey(w){return sharedNorm(w.name)+'|'+String(Number(w.ml)||0)}
@@ -261,13 +294,14 @@ function sharedCommit(){
  let add=0,quotes=0;
  for(const a of sharedPending){
  const key=sharedKey(a);let p=pmap.get(key);
- if(!p){p={key,name:a.name,ml:a.ml,type:a.type,suppliers:[],stores:{'鳥久':false,'隼':false}};pmap.set(key,p);sharedDB.products.push(p);add++}
+ if(!p){p={key,name:a.name,ml:a.ml,type:a.type,suppliers:[],stores:{'鳥久':true,'隼':true}};pmap.set(key,p);sharedDB.products.push(p);add++}
  if(a.supplier&&!p.suppliers.includes(a.supplier))p.suppliers.push(a.supplier);
+ sharedSyncToStores(p);
  const qkey=[key,a.supplier,a.sku,a.source,a.sourcePage,a.raw].join('|');
  if(!quoteKeys.has(qkey)){quoteKeys.add(qkey);sharedDB.quotes.push({...a,productKey:key});quotes++}
  }
- if(!sharedSave())return;sharedPending=[];$('sharedCommit').disabled=true;
- $('sharedStatus').textContent='匯入成功：新增共用酒款 '+add+' 款、廠商報價 '+quotes+' 筆，保留既有資料。';
+ if(!sharedSave())return;persist();sharedPending=[];$('sharedCommit').disabled=true;
+ $('sharedStatus').textContent='匯入成功：新增共用酒款 '+add+' 款、廠商報價 '+quotes+' 筆。新酒款已預設鳥久、隼兩店使用，保留既有售價。';
  sharedRender();
 }
 function sharedExport(){
