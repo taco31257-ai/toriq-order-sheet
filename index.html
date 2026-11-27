@@ -313,7 +313,7 @@ const WINE_PRICING_RULES={
  500:{multiplier:2,min:1000,cupRate:.16},
  720:{multiplier:2,min:1200,cupRate:.125},
  900:{multiplier:2,min:1300,cupRate:.1},
- 1800:{multiplier:2.5,min:2000,cupRate:.05}
+ 1800:{multiplier:2.5,min:2000,cupRate:.065}
 };
 function winePriceEstimate(ml,taxIncludedCost){
  const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:null),cost=Number(taxIncludedCost);
