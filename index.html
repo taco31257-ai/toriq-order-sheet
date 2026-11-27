@@ -260,14 +260,17 @@ function quoteCommit(){
   const key=norm(w.name)+'|'+Number(w.ml);
   const winner=best.get(key);
   const price=winner?winePriceEstimate(w.ml,winner.vat):null;
-  let wasNew=false;
+  // 先比對兩店系統資料；如果僅其中一店有文案，新增另一店時沿用系統文案
+  const findExisting=shop=>db[shop].find(x=>(norm(x.name)===norm(w.name)&&Number(x.ml)===Number(w.ml))||(w.sku&&x.sku&&String(x.sku).toUpperCase()===String(w.sku).toUpperCase()&&Number(x.ml)===Number(w.ml)));
+  const previous=stores.map(findExisting),systemText=previous.find(x=>x&&String(x.desc||'').trim());
+  const newToBoth=previous.every(x=>!x);
+  let firstNew=null;
   for(const shop of stores){
    const list=db[shop];
-   let d=list.find(x=>norm(x.name)===norm(w.name)&&Number(x.ml)===Number(w.ml));
-   if(!d&&w.sku)d=list.find(x=>x.sku&&String(x.sku).toUpperCase()===String(w.sku).toUpperCase()&&Number(x.ml)===Number(w.ml));
+   let d=findExisting(shop);
    if(!d){
-    d={id:mkId(),name:String(w.name).trim(),type:w.type||'清酒',ml:Number(w.ml)||720,price:0,cup:0,cost:'',supplier:w.supplier||'',desc:String(w.desc||''),sku:w.sku||''};
-    list.push(d);created++;wasNew=true;
+    d={id:mkId(),name:String(w.name).trim(),type:w.type||'清酒',ml:Number(w.ml)||720,price:0,cup:0,cost:'',supplier:w.supplier||'',desc:systemText?systemText.desc:String(w.desc||''),sku:w.sku||''};
+    list.push(d);created++;if(!firstNew)firstNew=d;
    }else{matched++}
    // 現有酒名、分類、介紹及兩店各自編輯內容永不以新報價覆蓋
    if(!d.supplier&&w.supplier)d.supplier=w.supplier;
@@ -281,8 +284,8 @@ function quoteCommit(){
     // 非標準容量或不支援定價規格：可保留新含稅進價但不覆蓋舊售價
     d.cost=w.vat;
    }
-   if(wasNew&&shop===stores[0])added.push({...d});
   }
+  if(newToBoth&&firstNew)added.push({...firstNew});
  }
  persist();render();
  // 只將真正新增的酒款送至 cloudAddWines，避免後端 addWines 覆蓋已編輯文案
