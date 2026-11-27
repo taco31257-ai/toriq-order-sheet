@@ -316,11 +316,12 @@ const WINE_PRICING_RULES={
  1800:{multiplier:2.5,min:2000,cupRate:.05}
 };
 function winePriceEstimate(ml,taxIncludedCost){
- const rule=WINE_PRICING_RULES[Number(ml)],cost=Number(taxIncludedCost);
+ const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:null),cost=Number(taxIncludedCost);
  if(!rule||!Number.isFinite(cost)||cost<=0)return null;
  // 整瓶售價十位及個位都是0，故無條件進位到百元；單杯個位是0，進位到十元
  const ceilStep=(x,step)=>Math.ceil((x-1e-8)/step)*step;
- const bottle=ceilStep(Math.max(cost*rule.multiplier,rule.min),100);
+ // 最低利潤：售價至少＝進價＋每瓶最少要賺的金額
+ const bottle=ceilStep(Math.max(cost*rule.multiplier,cost+rule.min),100);
  const cup=ceilStep(bottle*rule.cupRate,10);
  return {cost,bottle,cup};
 }
