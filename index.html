@@ -739,8 +739,7 @@ function foodImportPanel(){
      const key=String(v.id)+'|'+foodNorm(it.name);
      const src=String(it.sourceId||'');
      let d=byItem.get(key);
-     // 同名不同來源的兩筆品項不可合併；但原本未註記來源 ID 的舊品項仍可比對名稱。
-     if(d&&d.sourceId&&src&&String(d.sourceId)!==src)d=null;
+     // 舊版合併過的同名項目先沿用原紀錄；新的重複來源列已透過名稱註記區分。
      if(!d){d={id:'imp-i:'+shop+':'+String(it.sourceId||foodNorm(it.name)),vendor:v.id,name:it.name};next.items.push(d);created++}
      else updated++;
      d.name=it.name;
