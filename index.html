@@ -312,17 +312,19 @@ let sharedDB={products:[],quotes:[]},sharedPending=[];
 const WINE_PRICING_RULES={
  500:{multiplier:2,min:1000,cupRate:.16},
  720:{multiplier:2,min:1200,cupRate:.125},
- 900:{multiplier:2,min:1300,cupRate:.1},
- 1800:{multiplier:2.5,min:2000,cupRate:.065}
+ 900:{multiplier:2,min:1300,cupRate:.11},
+ 1800:{multiplier:2.5,min:2000,cupRate:.0625}
 };
+/* 375ml 以下：價格2倍，每瓶最少賺600，無單杯 */
+const SMALL_BOTTLE_RULE={multiplier:2,min:600,cupRate:0};
 function winePriceEstimate(ml,taxIncludedCost){
- const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:null),cost=Number(taxIncludedCost);
+ const n=Number(ml),rule=WINE_PRICING_RULES[n]||((n===700||n===750)?WINE_PRICING_RULES[720]:(n>0&&n<=375)?SMALL_BOTTLE_RULE:null),cost=Number(taxIncludedCost);
  if(!rule||!Number.isFinite(cost)||cost<=0)return null;
  // 整瓶售價十位及個位都是0，故無條件進位到百元；單杯個位是0，進位到十元
  const ceilStep=(x,step)=>Math.ceil((x-1e-8)/step)*step;
  // 最低利潤：售價至少＝進價＋每瓶最少要賺的金額
  const bottle=ceilStep(Math.max(cost*rule.multiplier,cost+rule.min),100);
- const cup=ceilStep(bottle*rule.cupRate,10);
+ const cup=rule.cupRate?ceilStep(bottle*rule.cupRate,10):0; // 375ml 以下不賣單杯
  return {cost,bottle,cup};
 }
 function priceQuoteEligible(q){
