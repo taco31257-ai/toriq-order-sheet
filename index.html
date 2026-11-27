@@ -625,7 +625,7 @@ async function foodBackupRead(key){
  })}finally{db.close()}
 }
 async function foodMigrateLegacyCache(){
- const keys=['toriqFoodImportBackupV1','toriqFoodImportCatalogV1'];
+ const keys=['toriqFoodImportBackupV1','toriqFoodImportCatalogV1','winePricingBackupV1'];
  let freed=0;
  for(const key of keys){
   const raw=localStorage.getItem(key);
@@ -642,10 +642,20 @@ function foodStorageReport(){
  for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i)||'';size+=key.length+(localStorage.getItem(key)||'').length}
  return Math.round(size*2/1024);
 }
+function foodDownloadSnapshot(){
+ const names=['ordersV2:鳥久','ordersV2:隼','wineOrdersV3:鳥久','wineOrdersV3:隼','wineLabelV1','toriqSharedWineLocalV1','toriqFoodImportBackupV1','toriqFoodImportCatalogV1','winePricingBackupV1'];
+ const out={exportedAt:new Date().toISOString(),version:'backup-v1',entries:{}};
+ for(const key of names){const value=localStorage.getItem(key);if(value!==null)out.entries[key]=value}
+ const blob=new Blob([JSON.stringify(out)],{type:'application/json;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='鳥久隼_本機資料安全備份_'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
 function foodImportPanel(){
  const host=document.createElement('div');host.className='importer';host.style.marginTop='20px';
- host.innerHTML='<h2>兩店叫貨品項匯入（Excel／JSON）</h2><p class="muted">上傳原始「鳥久隼合併料理成本叫貨」Excel 或已整理的 JSON。資料在本裝置讀取；匯入時同時更新兩店品項與成本，保留各店原有叫貨紀錄、不刪除手動新增品項。備註中的帳號與密碼不會匯入。舊版匯入備份會先搬到 IndexedDB，確認備份後才釋放原本重複占用的空間。</p><input type="file" id="foodImportFile" accept=".xlsx,.xls,.json"><div id="foodImportStatus" class="muted" role="status" style="margin:10px 0"></div><button id="foodImportGo" type="button" disabled>確認導入鳥久與隼</button>';
+ host.innerHTML='<h2>兩店叫貨品項匯入（Excel／JSON）</h2><p class="muted">上傳原始「鳥久隼合併料理成本叫貨」Excel 或已整理的 JSON。資料在本裝置讀取；匯入時同時更新兩店品項與成本，保留各店原有叫貨紀錄、不刪除手動新增品項。備註中的帳號與密碼不會匯入。舊版匯入備份會先搬到 IndexedDB，確認備份後才釋放原本重複占用的空間。</p><input type="file" id="foodImportFile" accept=".xlsx,.xls,.json"><div id="foodImportStatus" class="muted" role="status" style="margin:10px 0"></div><button id="foodImportGo" type="button" disabled>確認導入鳥久與隼</button><button id="foodImportBackupDownload" type="button" class="alt" style="margin-left:8px">先下載本機資料備份</button>';
  const file=host.querySelector('#foodImportFile'),status=host.querySelector('#foodImportStatus'),go=host.querySelector('#foodImportGo');
+ host.querySelector('#foodImportBackupDownload').onclick=foodDownloadSnapshot;
  file.onchange=async()=>{
   foodImportDraft=null;go.disabled=true;
   if(!file.files?.length){status.textContent='尚未選檔';return}
