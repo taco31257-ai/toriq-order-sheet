@@ -207,12 +207,17 @@ function saveMaster_(store, vendors, items) {
     if (row) vals.forEach((x, i) => row[i] = x); else { vrows.push(vals); vById[vals[0]] = vals; }
   });
   const iById = {}; irows.forEach(r => iById[String(r[0])] = r);
+  const normItem = x => str_(x).toLowerCase().replace(/[\\s　_\\-－（）()]/g, '');
   const keep = new Set();
   items.forEach(i => {
-    const id = str_(i.id); keep.add(id);
-    let row = iById[id];
-    if (!row) { row = Array(HEAD.items.length).fill(''); row[0] = id; irows.push(row); iById[id] = row; }
+    const id = str_(i.id);
     const vr = vById[str_(i.vendor)];
+    const vendorName = vr ? str_(vr[1]) : '';
+    // 同一商品兩店匯入時，即使早期分店 ID 不同，也優先對應共用的舊列
+    let row = iById[id] || irows.find(r => normItem(r[3]) === normItem(i.name) &&
+      (str_(r[1]) === str_(i.vendor) || (vendorName && normItem(r[2]) === normItem(vendorName))));
+    if (!row) { row = Array(HEAD.items.length).fill(''); row[0] = id; irows.push(row); iById[id] = row; }
+    keep.add(str_(row[0]));
     row[1] = str_(i.vendor); row[2] = vr ? vr[1] : row[2]; row[3] = str_(i.name).trim(); row[4] = num_(i.price); row[5] = str_(i.unit);
     row[c] = str_(i.cat).trim() || '備品'; row[c + 1] = str_(i.week); row[c + 2] = str_(i.holiday);
     row[ITEM_NOTE_COL[store]] = str_(i.note);
