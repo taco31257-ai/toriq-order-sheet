@@ -390,6 +390,27 @@
       setBadge();
     });
   }
+  /* 匯入 Excel 後立即同步店別主檔，避免尚未建立 cloud:master 標記時跳過資料 */
+  window.cloudSyncImportedFood = async function (shops) {
+    if (!CLOUD_URL) return { state: 'local', message: '此網站尚未設定雲端網址，資料目前只保存在本機' };
+    if (!key()) return { state: 'login', message: '尚未輸入雲端同步密碼，請點擊雲端狀態按鈕登入後再同步' };
+    const done = [];
+    try {
+      for (const s of shops) {
+        if (!STORES.includes(s)) continue;
+        await serial('food:' + s, () => pushMasterNow(s, true));
+        done.push(s);
+      }
+      lastOk = new Date();
+      lastErr = '';
+      setBadge();
+      return { state: 'ok', stores: done, message: done.join('、') + ' 的品項及安全庫存已送交雲端主檔' };
+    } catch (e) {
+      lastErr = e.message;
+      setBadge();
+      return { state: 'error', stores: done, message: '雲端更新失敗：' + e.message + '。本機匯入資料仍保留，請稍後重試同步' };
+    }
+  };
   window.addEventListener('online', () => { if (typeof current !== 'undefined' && current) { pushOrders('food', current); pushOrders('wine', current); pushWines(current); } });
   setBadge();
 })();
